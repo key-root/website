@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>初中数学因式分解闪卡系统</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2980, #26d0ce);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            color: white;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            margin-bottom: 15px;
+        }
+        
+        .subtitle {
+            font-size: 1.4rem;
+            color: #e0f7fa;
+            font-weight: 300;
+            margin-bottom: 20px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background: #2980b9;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        .flashcards-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 25px;
+        }
+        
+        .flashcard {
+            width: 350px;
+            height: 500px;
+            perspective: 1000px;
+            cursor: pointer;
+            margin-bottom: 25px;
+        }
+        
+        .flashcard-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+        }
+        
+        .flashcard.flipped .flashcard-inner {
+            transform: rotateY(180deg);
+        }
+        
+        .flashcard-front, .flashcard-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .flashcard-front {
+            background: linear-gradient(45deg, #ffffff, #f5f5f5);
+        }
+        
+        .flashcard-back {
+            background: linear-gradient(45deg, #2c3e50, #1a1f28);
+            color: white;
+            transform: rotateY(180deg);
+            overflow-y: auto;
+        }
+        
+        .card-number {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: #3498db;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        .flashcard-back h2 {
+            color: #3498db;
+            border-bottom: 3px solid #e74c3c;
+        }
+        
+        .formula {
+            font-size: 1.5rem;
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(236, 240, 241, 0.5);
+            border-radius: 10px;
+            font-family: 'Cambria Math', serif;
+        }
+        
+        .problem-box {
+            background: rgba(52, 152, 219, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+        
+        ul {
+            padding-left: 30px;
+            margin: 15px 0;
+        }
+        
+        li {
+            margin-bottom: 10px;
+        }
+        
+        .exercise {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(231, 76, 60, 0.15);
+            border-radius: 10px;
+        }
+        
+        .solution {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(46, 204, 113, 0.15);
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .solution.visible {
+            display: block;
+        }
+        
+        .interaction {
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .hint {
+            background: rgba(241, 196, 15, 0.15);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+        
+        .step {
+            margin: 10px 0;
+            font-family: 'Consolas', monospace;
+            padding-left: 20px;
+        }
+        
+        .puzzle-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+        
+        .puzzle-piece {
+            width: 100px;
+            height: 100px;
+            background: #3498db;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: all 0.5s;
+        }
+        
+        .more-examples-container {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+        }
+        
+        .more-examples-container.visible {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        @media (max-width: 768px) {
+            .flashcard {
+                width: 100%;
+                max-width: 400px;
+                height: 450px;
+            }
+            
+            h1 {
+                font-size: 2.3rem;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 数学因式分解闪卡系统</h1>
+            <p class="subtitle">点击卡片学习因式分解的核心概念与解题技巧</p>
+        </header>
+        
+        <div class="controls">
+            <button id="resetAll" class="btn btn-danger">重置所有卡片</button>
+            <button id="showAllSolutions" class="btn">显示所有解答</button>
+            <button id="hideAllSolutions" class="btn">隐藏所有解答</button>
+        </div>
+        
+        <div class="flashcards-container">
+            <!-- 闪卡 1：概念定义 -->
+            <div class="flashcard" id="card1">
+                <div class="flashcard-inner">
+                    <div class="flashcard-front">
+                        <div class="card-number">1</div>
+                        <h2>因式分解定义</h2>
+                        <p>将多项式分解成整式乘积的过程称为因式分解。</p>
+                        <div class="hint">点击卡片查看定义和实例</div>
+                    </div>
+                    <div class="flashcard-back">
+                        <h2>因式分解定义</h2>
+                        <p>把一个多项式化成几个整式乘积的形式，这种变形叫作因式分解。</p>
+                        <div class="formula">a³ - a = a(a + 1)(a - 1)</div>
+                        <p>例如：</p>
+                        <ul>
+                            <li>a³ - a = a(a+1)(a-1)</li>
+                            <li>am + bm + cm = m(a+b+c)</li>
+                            <li>x² + 2x + 1 = (x+1)²</li>
+                        </ul>
+                        <div class="more-examples-container">
+                            <h3>更多实例：</h3>
+                            <ul>
+                                <li>2x² - 8 = 2(x² - 4) = 2(x+2)(x-2)</li>
+                                <li>a² - b² = (a+b)(a-b)</li>
+                                <li>x² + 5x + 6 = (x+2)(x+3)</li>
+                                <li>4a² - 9b² = (2a + 3b)(2a - 3b)</li>
+                                <li>xy + x + y + 1 = x(y+1) + (y+1) = (x+1)(y+1)</li>
+                            </ul>
+                        </div>
+                        <div class="interaction">
+                            <button class="btn show-examples-btn">显示更多实例</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 闪卡 2：典型例题解析 -->
+            <div class="flashcard" id="card2">
+                <div class="flashcard-inner">
+                    <div class="flashcard-front">
+                        <div class="card-number">2</div>
+                        <h2>典型例题</h2>
+                        <div class="problem-box">
+                            <div class="formula">99³ - 99 能被100整除吗？</div>
+                            <p>点击卡片查看解题过程</p>
+                        </div>
+                    </div>
+                    <div class="flashcard-back">
+                        <h2>解题过程</h2>
+                        <div class="step">99³ - 99</div>
+                        <div class="step">= 99 × 99² - 99 × 1</div>
+                        <div class="step">= 99 × (99² - 1) [提取公因式]</div>
+                        <div class="step">= 99 × (99 + 1)(99 - 1) [平方差公式]</div>
+                        <div class="step">= 99 × 100 × 98</div>
+                        <div class="solution">结论：99³ - 99 = 99 × 100 × 98，因此能被100整除</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 闪卡 3：基本方法与关系 -->
+            <div class="flashcard" id="card3">
+                <div class="flashcard-inner">
+                    <div class="flashcard-front">
+                        <div class="card-number">3</div>
+                        <h2>因式分解方法</h2>
+                        <p>几种常见的因式分解方法：</p>
+                        <ul>
+                            <li>提公因式法</li>
+                            <li>公式法（平方差、完全平方等）</li>
+                            <li>分组分解法</li>
+                        </ul>
+                        <div class="hint">点击卡片查看关系与实例</div>
+                    </div>
+                    <div class="flashcard-back">
+                        <h2>因式分解与整式乘法的关系</h2>
+                        <p>因式分解是整式乘法的逆运算：</p>
+                        <div class="formula">(a + b)(a - b) = a² - b²</div>
+                        <p>因式分解形式：</p>
+                        <div class="formula">a² - b² = (a + b)(a - b)</div>
+                        
+                        <div class="exercise">
+                            因式分解：m² - 16
+                            <button class="btn toggle-solution">显示解答</button>
+                            <div class="solution">= (m + 4)(m - 4)</div>
+                        </div>
+                        
+                        <div class="exercise">
+                            因式分解：y² - 6y + 9
+                            <button class="btn toggle-solution">显示解答</button>
+                            <div class="solution">= (y - 3)²</div>
+                        </div>
+                        
+                        <div class="exercise">
+                            因式分解：2x³ + 8x² + 6x
+                            <button class="btn toggle-solution">显示解答</button>
+                            <div class="solution">= 2x(x² + 4x + 3) = 2x(x+1)(x+3)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 闪卡 4：随堂练习 -->
+            <div class="flashcard" id="card4">
+                <div class="flashcard-inner">
+                    <div class="flashcard-front">
+                        <div class="card-number">4</div>
+                        <h2>随堂练习</h2>
+                        <div class="problem-box">
+                            <p>判断哪些是因式分解？</p>
+                            <div class="formula">(a + 3)(a - 3) = a² - 9</div>
+                            <div class="formula">m² - 4 = (m + 2)(m - 2)</div>
+                        </div>
+                        <div class="hint">点击卡片查看解答</div>
+                    </div>
+                    <div class="flashcard-back">
+                        <h2>随堂练习答案</h2>
+                        <div class="exercise">
+                            1. (a + 3)(a - 3) = a² - 9 
+                            <div class="solution">是整式乘法，不是因式分解（左边是乘积形式，右边是多项式）</div>
+                        </div>
+                        <div class="exercise">
+                            2. m² - 4 = (m + 2)(m - 2)
+                            <div class="solution">是因式分解（左边是多项式，右边是整式乘积）</div>
+                        </div>
+                        <div class="exercise">
+                            3. a² - b² + 1 = (a+b)(a-b) + 1
+                            <div class="solution">不是因式分解（结果不是纯乘积形式）</div>
+                        </div>
+                        <div class="exercise">
+                            4. 2mR + 2mr = 2m(R + r)
+                            <div class="solution">是因式分解（提取公因式）</div>
+                        </div>
+                        <div class="exercise">
+                            5. x² + 4x + 4 = (x+2)²
+                            <div class="solution">是因式分解（完全平方公式）</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 闪卡 5：挑战思考 -->
+            <div class="flashcard" id="card5">
+                <div class="flashcard-inner">
+                    <div class="flashcard-front">
+                        <div class="card-number">5</div>
+                        <h2>挑战思考</h2>
+                        <div class="problem-box">
+                            <p>几何视角理解因式分解：</p>
+                            <div class="formula">a² - a = a(a - 1)</div>
+                            <div class="formula">如何用几何图形表示这个因式分解？</div>
+                        </div>
+                        <div class="hint">点击卡片查看解答</div>
+                    </div>
+                    <div class="flashcard-back">
+                        <h2>几何理解</h2>
+                        <p>一个边长为a的正方形：</p>
+                        <div class="formula">面积 = a²</p>
+                        <p>减去一个1×a的长方形：</p>
+                        <div class="formula">a² - a = a(a - 1)</div>
+                        
+                        <div class="puzzle-container">
+                            <div class="puzzle-piece">a²</div>
+                            <div class="puzzle-piece">-a</div>
+                            <div class="puzzle-piece">= a(a-1)</div>
+                        </div>
+                        
+                        <div class="hint">分解步骤：</div>
+                        <div class="step">1. 一个边长为a的正方形 (面积: a²)</div>
+                        <div class="step">2. 减去一个宽为1、长为a的长方形 (面积: a)</div>
+                        <div class="step">3. 剩余部分：长=a，宽=a-1的长方形 (面积: a(a-1))</div>
+                        
+                        <div class="interaction">
+                            <button class="btn" id="animatePuzzle">动画演示</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>使用提示：<span class="highlight">点击卡片</span>查看背面内容，<span class="highlight">点击按钮</span>查看详细解析</p>
+            <p>初中数学因式分解章节 | 互动学习系统</p>
+        </footer>
+    </div>
+    
+    <script>
+        // 卡片翻转功能
+        document.querySelectorAll('.flashcard').forEach(card => {
+            card.addEventListener('click', function() {
+                this.classList.toggle('flipped');
+            });
+        });
+        
+        // 显示更多示例
+        document.querySelectorAll('.show-examples-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation(); // 阻止事件冒泡到卡片
+                const examplesContainer = this.parentElement.previousElementSibling;
+                examplesContainer.classList.toggle('visible');
+                
+                if (examplesContainer.classList.contains('visible')) {
+                    this.textContent = '隐藏更多实例';
+                } else {
+                    this.textContent = '显示更多实例';
+                }
+            });
+        });
+        
+        // 切换解答显示
+        document.querySelectorAll('.toggle-solution').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const solution = this.nextElementSibling;
+                solution.classList.toggle('visible');
+                
+                if (solution.classList.contains('visible')) {
+                    this.textContent = '隐藏解答';
+                } else {
+                    this.textContent = '显示解答';
+                }
+            });
+        });
+        
+        // 拼图动画演示
+        document.getElementById('animatePuzzle').addEventListener('click', function(e) {
+            e.stopPropagation();
+            const pieces = document.querySelectorAll('.puzzle-piece');
+            
+            // 添加动画效果
+            pieces.forEach(piece => {
+                piece.style.transform = 'scale(1.1)';
+                piece.style.backgroundColor = '#e74c3c';
+            });
+            
+            // 3秒后恢复原状
+            setTimeout(() => {
+                pieces.forEach(piece => {
+                    piece.style.transform = 'scale(1)';
+                    piece.style.backgroundColor = '#3498db';
+                });
+            }, 3000);
+        });
+        
+        // 重置所有卡片
+        document.getElementById('resetAll').addEventListener('click', function() {
+            document.querySelectorAll('.flashcard').forEach(card => {
+                card.classList.remove('flipped');
+            });
+            
+            document.querySelectorAll('.solution').forEach(solution => {
+                solution.classList.remove('visible');
+            });
+            
+            document.querySelectorAll('.show-examples-btn').forEach(btn => {
+                btn.textContent = '显示更多实例';
+            });
+            
+            document.querySelectorAll('.more-examples-container').forEach(container => {
+                container.classList.remove('visible');
+            });
+            
+            document.querySelectorAll('.toggle-solution').forEach(btn => {
+                btn.textContent = '显示解答';
+            });
+            
+            alert('所有卡片已重置！');
+        });
+        
+        // 显示所有解答
+        document.getElementById('showAllSolutions').addEventListener('click', function() {
+            document.querySelectorAll('.solution').forEach(solution => {
+                solution.classList.add('visible');
+            });
+            
+            document.querySelectorAll('.toggle-solution').forEach(btn => {
+                btn.textContent = '隐藏解答';
+            });
+        });
+        
+        // 隐藏所有解答
+        document.getElementById('hideAllSolutions').addEventListener('click', function() {
+            document.querySelectorAll('.solution').forEach(solution => {
+                solution.classList.remove('visible');
+            });
+            
+            document.querySelectorAll('.toggle-solution').forEach(btn => {
+                btn.textContent = '显示解答';
+            });
+        });
+    </script>
+</body>
+</html>
